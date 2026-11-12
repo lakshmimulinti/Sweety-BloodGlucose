@@ -1,6 +1,6 @@
 import React from 'react';
 import { Reading } from '../services/api';
-import { Sparkles, CheckCircle, AlertTriangle, Lightbulb, HeartPulse } from 'lucide-react';
+import { Sparkles, CheckCircle, AlertTriangle, Lightbulb, HeartPulse, Activity } from 'lucide-react';
 
 interface AIInsightsProps {
   readings: Reading[];
@@ -8,6 +8,11 @@ interface AIInsightsProps {
 
 export const AIInsights: React.FC<AIInsightsProps> = ({ readings }) => {
   if (readings.length === 0) return null;
+
+  // Calculate overall average and estimated HbA1c: (avg + 46.7) / 28.7
+  const sum = readings.reduce((acc, r) => acc + r.value, 0);
+  const avgGlucose = sum / readings.length;
+  const estimatedA1c = ((avgGlucose + 46.7) / 28.7).toFixed(1);
 
   // Pattern detection algorithms
   const fastingReadings = readings.filter((r) => r.slot.includes('fasting'));
@@ -85,11 +90,23 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ readings }) => {
   return (
     <div className="ai-insights-card">
       <div className="ai-insights-header">
-        <div className="ai-header-badge">
-          <Sparkles size={18} className="ai-sparkle-icon" />
-          <span>Sweety AI Assistant</span>
+        <div className="ai-header-left">
+          <div className="ai-header-badge">
+            <Sparkles size={18} className="ai-sparkle-icon" />
+            <span>Sweety AI Assistant</span>
+          </div>
+          <span className="ai-tag">Pattern Recognition</span>
         </div>
-        <span className="ai-tag">Pattern Recognition</span>
+
+        {/* Merged eHbA1c Clinical Metric Pill (Saves space & integrates clinical analysis) */}
+        <div className="ai-ehba1c-pill" title="Estimated HbA1c based on all logged glucose values: (Avg + 46.7) / 28.7">
+          <HeartPulse size={16} className="text-pink" />
+          <span className="ehba1c-label">Estimated eHbA1c:</span>
+          <span className="ehba1c-val font-bold">{estimatedA1c}%</span>
+          <span className={`ehba1c-status ${Number(estimatedA1c) < 7.0 ? 'status-good' : 'status-elevated'}`}>
+            {Number(estimatedA1c) < 7.0 ? 'Optimal Baseline' : 'Elevated'}
+          </span>
+        </div>
       </div>
 
       <div className="ai-insights-grid">

@@ -8,6 +8,7 @@ interface ReadingModalProps {
   onSuccess: () => void;
   initialReading?: Reading | null;
   defaultDate?: string;
+  defaultSlot?: string;
 }
 
 export const ALLOWED_SLOTS = [
@@ -22,7 +23,8 @@ export const ReadingModal: React.FC<ReadingModalProps> = ({
   onClose,
   onSuccess,
   initialReading,
-  defaultDate
+  defaultDate,
+  defaultSlot
 }) => {
   const getTodayStr = () => {
     const d = new Date();
@@ -37,7 +39,7 @@ export const ReadingModal: React.FC<ReadingModalProps> = ({
   const [value, setValue] = useState<string>('');
   const [date, setDate] = useState<string>(defaultDate || getTodayStr());
   const [time, setTime] = useState<string>(getTimeStr());
-  const [slot, setSlot] = useState<string>(ALLOWED_SLOTS[0]);
+  const [slot, setSlot] = useState<string>(defaultSlot || ALLOWED_SLOTS[0]);
   const [notes, setNotes] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -52,11 +54,11 @@ export const ReadingModal: React.FC<ReadingModalProps> = ({
       setValue('');
       setDate(defaultDate || getTodayStr());
       setTime(getTimeStr());
-      setSlot(ALLOWED_SLOTS[0]);
+      setSlot(defaultSlot || ALLOWED_SLOTS[0]);
       setNotes('');
     }
     setError(null);
-  }, [initialReading, defaultDate, isOpen]);
+  }, [initialReading, defaultDate, defaultSlot, isOpen]);
 
   if (!isOpen) return null;
 
@@ -237,3 +239,4 @@ export const ReadingModal: React.FC<ReadingModalProps> = ({
     </div>
   );
 };
+

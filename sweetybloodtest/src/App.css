@@ -552,32 +552,137 @@ body {
 }
 
 /* ==========================================================================
-   KPI SUMMARY CARDS (MATCHING IMAGE 4 REFERENCE)
+   KPI SUMMARY CARDS & QUICK REPORT SWITCHER (EMPTY SPACE FIX - 4 CARDS)
    ========================================================================== */
 
 .kpi-dashboard-wrapper {
   margin-bottom: 24px;
 }
 
-.kpi-section-header {
-  margin-bottom: 16px;
+.report-quick-switch-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-sm);
 }
 
-.kpi-section-title {
-  font-size: 22px;
+.report-title-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.report-pill-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--primary);
+  background: var(--primary-light);
+  padding: 3px 10px;
+  border-radius: 12px;
+  width: fit-content;
+}
+
+.report-main-title {
+  font-size: 20px;
   font-weight: 800;
   color: var(--text-main);
+  letter-spacing: -0.3px;
 }
 
-.kpi-section-subtitle {
+.report-period-text {
   font-size: 13px;
   color: var(--text-muted);
 }
 
-.kpi-grid {
+.report-controls-group {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.reference-date-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #f8fafc;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 6px 12px;
+}
+
+.date-picker-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.quick-date-input {
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 700;
+  color: #1e293b;
+  outline: none;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.quick-report-tabs {
+  display: flex;
+  background: #f1f5f9;
+  padding: 4px;
+  border-radius: 10px;
+  gap: 4px;
+}
+
+.quick-tab {
+  background: transparent;
+  border: none;
+  padding: 7px 14px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.quick-tab.active {
+  background: #ffffff;
+  color: var(--primary);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+}
+
+/* Symmetrical 4-Column Grid with ZERO orphan cards */
+.kpi-grid-4 {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
+}
+
+@media (max-width: 1024px) {
+  .kpi-grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .kpi-grid-4 {
+    grid-template-columns: 1fr;
+  }
 }
 
 .kpi-card {
@@ -591,16 +696,6 @@ body {
   justify-content: space-between;
 }
 
-.kpi-card-wide {
-  grid-column: span 2;
-}
-
-@media (max-width: 768px) {
-  .kpi-card-wide {
-    grid-column: span 1;
-  }
-}
-
 .kpi-card-top {
   display: flex;
   align-items: center;
@@ -609,8 +704,8 @@ body {
 }
 
 .kpi-card-title {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 700;
   color: #475569;
 }
 
@@ -627,7 +722,7 @@ body {
 }
 
 .kpi-primary-val {
-  font-size: 36px;
+  font-size: 32px;
   font-weight: 800;
   letter-spacing: -0.5px;
 }
@@ -639,7 +734,7 @@ body {
 .text-blue { color: #2563eb; }
 
 .kpi-unit {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   color: #64748b;
 }
@@ -652,13 +747,17 @@ body {
 
 /* Time in range segment bar (Image 4) */
 .time-in-range-bar-container {
-  margin: 14px 0 10px;
+  margin: 10px 0 8px;
+}
+
+.time-in-range-bar-container.compact {
+  margin: 8px 0 6px;
 }
 
 .time-in-range-bar {
   display: flex;
-  height: 22px;
-  border-radius: 12px;
+  height: 20px;
+  border-radius: 10px;
   overflow: hidden;
   background: #f1f5f9;
 }
@@ -667,7 +766,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   color: #ffffff;
   transition: width 0.3s ease;
@@ -681,21 +780,345 @@ body {
 .bar-legend-row {
   display: flex;
   align-items: center;
-  gap: 16px;
-  font-size: 12px;
+  gap: 12px;
+  font-size: 11px;
   color: #64748b;
+}
+
+.bar-legend-row.compact-legend {
+  font-size: 10px;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .legend-item {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
 }
 
 .legend-dot {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
+}
+
+.dot-low { background: #f97316; }
+.dot-normal { background: #10b981; }
+.dot-high { background: #ef4444; }
+
+/* ==========================================================================
+   DAILY 4-SLOT PROTOCOL TRACKER (POINT 3 REQUIREMENT)
+   ========================================================================== */
+
+.daily-tracker-card {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 22px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+.daily-tracker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.tracker-title-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tracker-icon-box {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: #eff6ff;
+  color: #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tracker-title {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.tracker-subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.tracker-progress-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.progress-text {
+  font-size: 12px;
+  font-weight: 700;
+  color: #334155;
+}
+
+.progress-mini-bar {
+  width: 120px;
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981, #059669);
+  border-radius: 10px;
+  transition: width 0.3s ease;
+}
+
+.daily-empty-alert {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fffbeb;
+  border: 1px solid #fef3c7;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  color: #b45309;
+  margin-bottom: 16px;
+}
+
+.slots-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+@media (max-width: 1024px) {
+  .slots-grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .slots-grid-4 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.slot-box {
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 140px;
+  transition: all 0.2s ease;
+}
+
+.slot-box-completed {
+  background: #f8fafc;
+  border: 1.5px solid #cbd5e1;
+}
+
+.slot-box-completed:hover {
+  border-color: #94a3b8;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.slot-box-pending {
+  background: #fafafa;
+  border: 1.5px dashed #cbd5e1;
+}
+
+.slot-box-pending:hover {
+  border-color: var(--primary);
+  background: #fdfdfd;
+}
+
+.slot-box-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.slot-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.completed-pill {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+.pending-pill {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.slot-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.slot-action-btn {
+  background: transparent;
+  border: none;
+  padding: 4px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #94a3b8;
+  transition: all 0.2s;
+}
+
+.slot-action-btn:hover {
+  background: #e2e8f0;
+  color: var(--primary);
+}
+
+.slot-action-btn.delete:hover {
+  background: #fee2e2;
+  color: #ef4444;
+}
+
+.slot-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 6px;
+}
+
+.slot-value-row {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.slot-val-num {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.slot-val-unit {
+  font-size: 12px;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.pending-val {
+  color: #cbd5e1;
+}
+
+.slot-empty-dash {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.slot-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.slot-note-preview {
+  font-size: 11px;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.slot-log-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  color: var(--primary);
+  border-radius: 8px;
+  padding: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.slot-log-btn:hover {
+  background: var(--primary-light);
+  border-color: var(--primary);
+}
+
+/* ==========================================================================
+   AI INSIGHTS & MERGED eHbA1c PILL (LAYOUT SYMMETRY FIX)
+   ========================================================================== */
+
+.ai-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ai-ehba1c-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #fdf2f8;
+  border: 1px solid #fbcfe8;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+.text-pink { color: #db2777; }
+
+.ehba1c-label {
+  color: #831843;
+  font-weight: 600;
+}
+
+.ehba1c-val {
+  color: #9d174d;
+  font-size: 14px;
+}
+
+.ehba1c-status {
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.status-good {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.status-elevated {
+  background: #fef3c7;
+  color: #b45309;
 }
 
 .dot-low { background: #f97316; }

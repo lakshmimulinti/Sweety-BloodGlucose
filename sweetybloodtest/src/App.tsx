@@ -4,6 +4,7 @@ import { AuthCard } from './components/AuthCard';
 import { ReadingModal } from './components/ReadingModal';
 import { LogsTable } from './components/LogsTable';
 import { KPICards } from './components/KPICards';
+import { DailySlotsTracker } from './components/DailySlotsTracker';
 import { ReportsView } from './components/ReportsView';
 import { GlucoseChart } from './components/GlucoseChart';
 import { AIInsights } from './components/AIInsights';
@@ -23,12 +24,24 @@ export const App: React.FC = () => {
   };
 
   const [selectedReportDate, setSelectedReportDate] = useState<string>(getTodayStr());
+  const [activeReportType, setActiveReportType] = useState<'daily' | 'monthToDate' | 'monthly'>('daily');
   const [reportsData, setReportsData] = useState<ReportsResponse | null>(null);
   const [reportsLoading, setReportsLoading] = useState(false);
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingReading, setEditingReading] = useState<Reading | null>(null);
+  const [modalDefaultSlot, setModalDefaultSlot] = useState<string | undefined>(undefined);
+
+  // Auto-correct typo for display if user was saved with 'lakshmmi'
+  useEffect(() => {
+    if (currentUser && /lakshmmi/i.test(currentUser.name)) {
+      const fixedName = currentUser.name.replace(/lakshmmi/gi, 'Lakshmi');
+      const updatedUser = { ...currentUser, name: fixedName };
+      authStorage.setUser(updatedUser);
+      setCurrentUser(updatedUser);
+    }
+  }, [currentUser]);
 
   // Load all user readings
   const loadReadings = useCallback(async () => {
@@ -75,11 +88,20 @@ export const App: React.FC = () => {
 
   const handleOpenAddModal = () => {
     setEditingReading(null);
+    setModalDefaultSlot(undefined);
+    setIsModalOpen(true);
+  };
+
+  const handleOpenAddModalWithSlot = (slot: string, date: string) => {
+    setEditingReading(null);
+    setModalDefaultSlot(slot);
+    setSelectedReportDate(date);
     setIsModalOpen(true);
   };
 
   const handleOpenEditModal = (reading: Reading) => {
     setEditingReading(reading);
+    setModalDefaultSlot(reading.slot);
     setIsModalOpen(true);
   };
 
@@ -103,9 +125,7 @@ export const App: React.FC = () => {
     return <AuthCard onAuthSuccess={(user) => setCurrentUser(user)} />;
   }
 
-  // Active metrics for top KPI cards (uses Month-to-date or daily summary)
-  const currentMetrics = reportsData?.reports.monthToDate.metrics || null;
-  const currentPeriodLabel = reportsData?.reports.monthToDate.dateRange || 'Current Month';
+  const displayName = currentUser.name ? currentUser.name.replace(/lakshmmi/gi, 'Lakshmi') : 'Patient';
 
   return (
     <div className="app-shell">
@@ -138,7 +158,7 @@ export const App: React.FC = () => {
               onClick={() => setActiveNav('reports')}
             >
               <FileText size={18} />
-              <span>Reports</span>
+              <span>Detailed Reports</span>
             </button>
           </nav>
 
@@ -146,7 +166,7 @@ export const App: React.FC = () => {
           <div className="user-controls">
             <div className="user-avatar-badge" title={currentUser.email}>
               <UserIcon size={16} />
-              <span className="user-display-name">{currentUser.name}</span>
+              <span className="user-display-name">{displayName}</span>
             </div>
             <button
               type="button"
@@ -165,14 +185,26 @@ export const App: React.FC = () => {
       <main className="app-main-content">
         {activeNav === 'dashboard' ? (
           <div className="dashboard-layout">
-            {/* KPI Summary Cards (Reference Image 4) */}
+            {/* KPI Summary Cards with Date Picker & 3 Quick Tabs (Empty Space Fixed - Exactly 4 Symmetrical Cards) */}
             <KPICards
-              metrics={currentMetrics}
-              periodLabel={currentPeriodLabel}
+              selectedDate={selectedReportDate}
+              onDateChange={(newDate) => setSelectedReportDate(newDate)}
+              activeReportType={activeReportType}
+              onReportTypeChange={setActiveReportType}
+              reportsData={reportsData}
               onOpenAddModal={handleOpenAddModal}
             />
 
-            {/* AI Pattern Recognition & Insights */}
+            {/* Daily 4-Slot Protocol Tracker (Fasting, Breakfast, Lunch, Dinner with Complete/Pending status & Edit/Delete) */}
+            <DailySlotsTracker
+              selectedDate={selectedReportDate}
+              readings={readings}
+              onOpenAddModalWithSlot={handleOpenAddModalWithSlot}
+              onEdit={handleOpenEditModal}
+              onDelete={handleDeleteReading}
+            />
+
+            {/* AI Pattern Recognition & Insights (Merged with eHbA1c Clinical Metric) */}
             <AIInsights readings={readings} />
 
             {/* Interactive Trend Chart */}
@@ -208,6 +240,7 @@ export const App: React.FC = () => {
         onSuccess={handleModalSuccess}
         initialReading={editingReading}
         defaultDate={selectedReportDate}
+        defaultSlot={modalDefaultSlot}
       />
     </div>
   );
