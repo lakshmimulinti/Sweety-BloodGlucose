@@ -69,10 +69,17 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_BASE}${endpoint}`, {
-    ...options,
-    headers,
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE}${endpoint}`, {
+      ...options,
+      headers,
+    });
+  } catch (netErr: any) {
+    throw new Error(
+      'Cannot connect to the backend server. Please make sure the server is running on http://localhost:5000.'
+    );
+  }
 
   const data = await response.json().catch(() => ({}));
 
@@ -132,3 +139,4 @@ export const api = {
     },
   },
 };
+
