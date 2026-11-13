@@ -154,3 +154,4 @@ export const DailySlotsTracker: React.FC<DailySlotsTrackerProps> = ({
     </div>
   );
 };
+

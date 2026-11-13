@@ -235,3 +235,4 @@ export const LogsTable: React.FC<LogsTableProps> = ({
     </div>
   );
 };
+
