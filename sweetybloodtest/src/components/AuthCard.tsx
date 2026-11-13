@@ -149,7 +149,7 @@ export const AuthCard: React.FC<AuthCardProps> = ({ onAuthSuccess }) => {
 
   const fillDemoAccount = () => {
     setIsSignUp(false);
-    setEmail('demo@sweety.com');
+    setEmail('demo@kenpath.com');
     setPassword('Password123!');
     setGlobalError(null);
     setFieldErrors({});
