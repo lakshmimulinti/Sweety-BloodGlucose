@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Reading, api } from '../services/api';
 import { X, Calendar, Clock, AlertCircle } from 'lucide-react';
 
-interface ReadingModalProps {
+export interface ReadingModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
@@ -26,9 +26,13 @@ export const ReadingModal: React.FC<ReadingModalProps> = ({
   defaultDate,
   defaultSlot
 }) => {
+  // Helper to format today's date in YYYY-MM-DD
   const getTodayStr = () => {
     const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   };
 
   const getTimeStr = () => {
@@ -66,25 +70,30 @@ export const ReadingModal: React.FC<ReadingModalProps> = ({
     e.preventDefault();
     setError(null);
 
-    // Client-side instant validations matching exact Kenpath requirements:
-    // 1. Value is required
+    // =========================================================================
+    // KENPATH VALIDATION RULE 1: Value is required
+    // =========================================================================
     if (!value || value.trim() === '') {
       setError('Please enter a glucose value.');
-      return;
+      return; // Stop form execution, keep modal open
     }
 
-    // 2. Value must be a whole number between 40 and 600
-    const numVal = Number(value);
-    if (!Number.isInteger(numVal) || numVal < 40 || numVal > 600) {
+    // =========================================================================
+    // KENPATH VALIDATION RULE 2: Whole number between 40 and 600
+    // =========================================================================
+    const numVal = Number(value.trim());
+    if (isNaN(numVal) || !Number.isInteger(numVal) || numVal < 40 || numVal > 600) {
       setError('Value must be between 40 and 600 mg/dl.');
-      return;
+      return; // Stop form execution, keep modal open
     }
 
-    // 3. Date cannot be in the future
-    const today = getTodayStr();
-    if (date > today) {
+    // =========================================================================
+    // KENPATH VALIDATION RULE 3: Date cannot be in the future
+    // =========================================================================
+    const todayStr = getTodayStr();
+    if (date > todayStr) {
       setError('Date cannot be in the future.');
-      return;
+      return; // Stop form execution, keep modal open
     }
 
     setLoading(true);
@@ -104,8 +113,9 @@ export const ReadingModal: React.FC<ReadingModalProps> = ({
       }
 
       onSuccess();
-      onClose();
+      onClose(); // Only closes on successful submission
     } catch (err: any) {
+      // Backend validations (e.g. "You already have an After lunch reading for this date.")
       setError(err.message || 'Failed to save reading.');
     } finally {
       setLoading(false);
@@ -116,7 +126,12 @@ export const ReadingModal: React.FC<ReadingModalProps> = ({
     <div className="modal-backdrop">
       <div className="reading-modal-card">
         {/* Close icon */}
-        <button type="button" className="modal-close-btn" onClick={onClose} aria-label="Close dialog">
+        <button
+          type="button"
+          className="modal-close-btn"
+          onClick={onClose}
+          aria-label="Close dialog"
+        >
           <X size={20} />
         </button>
 
@@ -124,29 +139,33 @@ export const ReadingModal: React.FC<ReadingModalProps> = ({
           {initialReading ? 'Edit Blood Glucose Reading' : 'Enter your Blood Glucose Reading.'}
         </h2>
 
+        {/* Kenpath Error Message Banner at top of modal */}
         {error && (
           <div className="modal-error-alert" role="alert">
-            <AlertCircle size={18} />
-            <span>{error}</span>
+            <AlertCircle size={18} className="modal-error-icon" />
+            <span className="modal-error-text">{error}</span>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="modal-form">
+        {/* noValidate disabled native browser tooltips so custom validation renders */}
+        <form onSubmit={handleSubmit} className="modal-form" noValidate>
           <div className="modal-grid">
-            {/* Blood Glucose Input */}
+            {/* Blood Glucose Input (Native HTML5 min and max removed) */}
             <div className="modal-field">
-              <label htmlFor="bloodGlucoseInput" className="modal-label">Blood Glucose</label>
+              <label htmlFor="bloodGlucoseInput" className="modal-label">
+                Blood Glucose
+              </label>
               <div className="input-with-suffix">
                 <input
                   id="bloodGlucoseInput"
                   type="number"
-                  min="40"
-                  max="600"
-                  step="1"
                   placeholder="e.g. 119"
                   value={value}
-                  onChange={(e) => setValue(e.target.value)}
-                  className="modal-input"
+                  onChange={(e) => {
+                    setValue(e.target.value);
+                    if (error) setError(null);
+                  }}
+                  className={`modal-input ${error && (error.includes('glucose') || error.includes('between 40 and 600')) ? 'input-error' : ''}`}
                   autoFocus
                 />
                 <span className="input-suffix">mg/dL</span>
@@ -155,15 +174,19 @@ export const ReadingModal: React.FC<ReadingModalProps> = ({
 
             {/* Date Input */}
             <div className="modal-field">
-              <label htmlFor="readingDateInput" className="modal-label">Date</label>
+              <label htmlFor="readingDateInput" className="modal-label">
+                Date
+              </label>
               <div className="input-with-icon">
                 <input
                   id="readingDateInput"
                   type="date"
-                  max={getTodayStr()}
                   value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  className="modal-input"
+                  onChange={(e) => {
+                    setDate(e.target.value);
+                    if (error) setError(null);
+                  }}
+                  className={`modal-input ${error && error.includes('future') ? 'input-error' : ''}`}
                 />
                 <Calendar size={18} className="field-icon" />
               </div>
@@ -171,7 +194,9 @@ export const ReadingModal: React.FC<ReadingModalProps> = ({
 
             {/* Time Input */}
             <div className="modal-field">
-              <label htmlFor="readingTimeInput" className="modal-label">Time</label>
+              <label htmlFor="readingTimeInput" className="modal-label">
+                Time
+              </label>
               <div className="input-with-icon">
                 <input
                   id="readingTimeInput"
@@ -187,7 +212,9 @@ export const ReadingModal: React.FC<ReadingModalProps> = ({
 
             {/* Context / Slot Dropdown */}
             <div className="modal-field">
-              <label htmlFor="readingSlotSelect" className="modal-label">Context</label>
+              <label htmlFor="readingSlotSelect" className="modal-label">
+                Context
+              </label>
               <select
                 id="readingSlotSelect"
                 value={slot}
@@ -205,7 +232,9 @@ export const ReadingModal: React.FC<ReadingModalProps> = ({
 
           {/* Notes Input */}
           <div className="modal-field-full">
-            <label htmlFor="readingNotesInput" className="modal-label">Notes (Optional)</label>
+            <label htmlFor="readingNotesInput" className="modal-label">
+              Notes (Optional)
+            </label>
             <input
               id="readingNotesInput"
               type="text"
@@ -240,3 +269,6 @@ export const ReadingModal: React.FC<ReadingModalProps> = ({
   );
 };
 
+// Also export as AddReadingModal for compatibility
+export const AddReadingModal = ReadingModal;
+export default ReadingModal;
