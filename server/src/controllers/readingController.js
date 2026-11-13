@@ -249,3 +249,4 @@ module.exports = {
   deleteReading,
   ALLOWED_SLOTS
 };
+

@@ -174,3 +174,4 @@ describe('User Isolation & Reports', () => {
     expect(daily.readings.length).toBe(4);
   });
 });
+
