@@ -10,8 +10,8 @@ async function start() {
     await pool.query(createTablesQuery);
     console.log('Database tables verified/migrated.');
 
-    app.listen(PORT, () => {
-      console.log(`Sweety Server is running on http://localhost:${PORT}`);
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`Sweety Server is running on http://127.0.0.1:${PORT}`);
     });
   } catch (err) {
     console.error('Failed to start Sweety server:', err);
@@ -20,3 +20,4 @@ async function start() {
 }
 
 start();
+

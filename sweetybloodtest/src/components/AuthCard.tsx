@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { api, authStorage, User } from '../services/api';
-import { Mail, Lock, User as UserIcon, Activity, Sparkles, CheckCircle2, AlertCircle, ArrowRight } from 'lucide-react';
+import { Mail, Lock, User as UserIcon, Activity, Sparkles, CheckCircle2, AlertCircle, ArrowRight, RefreshCw } from 'lucide-react';
 
 interface AuthCardProps {
   onAuthSuccess: (user: User) => void;
@@ -25,26 +25,65 @@ export const AuthCard: React.FC<AuthCardProps> = ({ onAuthSuccess }) => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [registeredUser, setRegisteredUser] = useState<User | null>(null);
 
-  // Validate fields individually
-  const validate = (): boolean => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  // Validate a single field on blur
+  const validateField = (fieldName: 'name' | 'email' | 'password', val: string) => {
+    let error: string | undefined = undefined;
+
+    if (fieldName === 'name' && isSignUp) {
+      if (!val.trim()) {
+        error = 'Please enter your full name.';
+      } else if (val.trim().length < 2) {
+        error = 'Name must be at least 2 characters.';
+      }
+    }
+
+    if (fieldName === 'email') {
+      if (!val.trim()) {
+        error = 'Please enter your email address.';
+      } else if (!emailRegex.test(val.trim())) {
+        error = 'Please enter a valid email format (e.g. name@example.com).';
+      }
+    }
+
+    if (fieldName === 'password') {
+      if (!val) {
+        error = 'Please enter your password.';
+      } else if (isSignUp && val.length < 6) {
+        error = 'Password must be at least 6 characters.';
+      }
+    }
+
+    setFieldErrors((prev) => ({
+      ...prev,
+      [fieldName]: error,
+    }));
+
+    return !error;
+  };
+
+  // Validate all fields before submitting
+  const validateAll = (): boolean => {
     const errors: FieldErrors = {};
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (isSignUp) {
       if (!name.trim()) {
         errors.name = 'Please enter your full name.';
+      } else if (name.trim().length < 2) {
+        errors.name = 'Name must be at least 2 characters.';
       }
     }
 
     if (!email.trim()) {
       errors.email = 'Please enter your email address.';
     } else if (!emailRegex.test(email.trim())) {
-      errors.email = 'Please enter a valid email address (e.g. name@example.com).';
+      errors.email = 'Please enter a valid email format (e.g. name@example.com).';
     }
 
     if (!password) {
       errors.password = 'Please enter your password.';
-    } else if (password.length < 6) {
+    } else if (isSignUp && password.length < 6) {
       errors.password = 'Password must be at least 6 characters.';
     }
 
@@ -57,7 +96,7 @@ export const AuthCard: React.FC<AuthCardProps> = ({ onAuthSuccess }) => {
     setGlobalError(null);
 
     // Validate fields before submitting
-    if (!validate()) {
+    if (!validateAll()) {
       return;
     }
 
@@ -77,7 +116,25 @@ export const AuthCard: React.FC<AuthCardProps> = ({ onAuthSuccess }) => {
         onAuthSuccess(res.user);
       }
     } catch (err: any) {
-      setGlobalError(err.message || 'Authentication failed. Please try again.');
+      const msg = err.message || 'Authentication failed. Please try again.';
+
+      // Map backend errors directly to the corresponding input fields
+      if (/already exists/i.test(msg)) {
+        setFieldErrors((prev) => ({ ...prev, email: 'An account with this email already exists.' }));
+      } else if (/invalid email or password/i.test(msg)) {
+        setFieldErrors((prev) => ({
+          ...prev,
+          email: 'Invalid credentials. Please verify your email.',
+          password: 'Or check your password.'
+        }));
+        setGlobalError('Invalid email or password. Please try again.');
+      } else if (/valid email/i.test(msg)) {
+        setFieldErrors((prev) => ({ ...prev, email: 'Please enter a valid email format.' }));
+      } else if (/password/i.test(msg)) {
+        setFieldErrors((prev) => ({ ...prev, password: msg }));
+      } else {
+        setGlobalError(msg);
+      }
     } finally {
       setLoading(false);
     }
@@ -185,6 +242,7 @@ export const AuthCard: React.FC<AuthCardProps> = ({ onAuthSuccess }) => {
                       type="text"
                       placeholder="Name"
                       value={name}
+                      onBlur={() => validateField('name', name)}
                       onChange={(e) => {
                         setName(e.target.value);
                         if (fieldErrors.name) {
@@ -196,6 +254,7 @@ export const AuthCard: React.FC<AuthCardProps> = ({ onAuthSuccess }) => {
                   </div>
                   {fieldErrors.name && (
                     <span className="field-error-text" role="alert">
+                      <AlertCircle size={12} className="inline-error-icon" />
                       {fieldErrors.name}
                     </span>
                   )}
@@ -209,17 +268,20 @@ export const AuthCard: React.FC<AuthCardProps> = ({ onAuthSuccess }) => {
                     type="email"
                     placeholder="Email"
                     value={email}
+                    onBlur={() => validateField('email', email)}
                     onChange={(e) => {
                       setEmail(e.target.value);
                       if (fieldErrors.email) {
                         setFieldErrors((prev) => ({ ...prev, email: undefined }));
                       }
+                      if (globalError) setGlobalError(null);
                     }}
                     className={`styled-input ${fieldErrors.email ? 'input-error' : ''}`}
                   />
                 </div>
                 {fieldErrors.email && (
                   <span className="field-error-text" role="alert">
+                    <AlertCircle size={12} className="inline-error-icon" />
                     {fieldErrors.email}
                   </span>
                 )}
@@ -232,17 +294,20 @@ export const AuthCard: React.FC<AuthCardProps> = ({ onAuthSuccess }) => {
                     type="password"
                     placeholder="Password"
                     value={password}
+                    onBlur={() => validateField('password', password)}
                     onChange={(e) => {
                       setPassword(e.target.value);
                       if (fieldErrors.password) {
                         setFieldErrors((prev) => ({ ...prev, password: undefined }));
                       }
+                      if (globalError) setGlobalError(null);
                     }}
                     className={`styled-input ${fieldErrors.password ? 'input-error' : ''}`}
                   />
                 </div>
                 {fieldErrors.password && (
                   <span className="field-error-text" role="alert">
+                    <AlertCircle size={12} className="inline-error-icon" />
                     {fieldErrors.password}
                   </span>
                 )}

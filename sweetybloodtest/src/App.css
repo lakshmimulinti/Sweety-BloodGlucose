@@ -254,13 +254,20 @@ body {
 }
 
 .field-error-text {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 4px;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
   color: #dc2626;
   margin-top: 5px;
   margin-left: 4px;
   text-align: left;
+}
+
+.inline-error-icon {
+  flex-shrink: 0;
+  color: #dc2626;
 }
 
 /* ==========================================================================

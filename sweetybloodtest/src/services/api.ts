@@ -77,14 +77,20 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     });
   } catch (netErr: any) {
     throw new Error(
-      'Cannot connect to the backend server. Please make sure the server is running on http://localhost:5000.'
+      'Cannot connect to backend server. Please verify the Node server is running on http://127.0.0.1:5000.'
+    );
+  }
+
+  if (response.status === 502 || response.status === 503 || response.status === 504) {
+    throw new Error(
+      'Backend server is offline (502 Bad Gateway). Please ensure the backend is started in server/ directory.'
     );
   }
 
   const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    throw new Error(data.error || 'Something went wrong. Please try again.');
+    throw new Error(data.error || `Request failed with status ${response.status}.`);
   }
 
   return data as T;
